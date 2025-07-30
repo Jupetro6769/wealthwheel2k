@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Join Wealth Wheel</title>
+    <style>
+        :root {
+            --primary-color: #6a11cb;
+            --secondary-color: #2575fc;
+            --success-color: #00b894;
+            --error-color: #d63031;
+            --disabled-color: #b2bec3;
+            --text-color: #2d3436;
+            --light-text: #ffffff;
+            --border-color: #dfe6e9;
+        }
+        #ww-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-wrapper {
+            background: var(--light-text);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            position: relative;
+        }
+        .form-wrapper h2 {
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        .form-wrapper p {
+            color: #636e72;
+            margin-bottom: 2rem;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .input-field {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        .input-field.invalid {
+            border-color: var(--error-color);
+        }
+        .tooltip {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: help;
+            color: #b2bec3;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -120px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .phone-group { display: flex; }
+        #phone-prefix {
+            padding: 14px 12px;
+            background: #f1f2f6;
+            border: 1px solid var(--border-color);
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+        }
+        #phone { border-radius: 0 8px 8px 0; }
+        .terms-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .terms-group input { margin-right: 8px; }
+        .terms-group a { color: var(--primary-color); text-decoration: none; }
+        #pay-button {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--light-text);
+            background: linear-gradient(135deg, var(--success-color), #00a884);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            margin-top: 1.5rem;
+        }
+        #pay-button:disabled {
+            background: var(--disabled-color);
+            cursor: not-allowed;
+        }
+        #pay-button:not(:disabled):hover {
+            filter: brightness(1.1);
+        }
+        .security-note {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: #636e72;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .modal-content h3 { margin-top: 0; }
+        #progress-log, #error-message {
+            text-align: left;
+            background: #f1f2f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #error-options button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        #error-options button:first-child {
+            background: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="ww-container">
+        <div class="form-wrapper">
+            <h2>Join Wealth Wheel</h2>
+            <p>Complete the form to start your journey for only R200.</p>
+            <form id="payment-form">
+                <div class="input-group">
+                    <input type="text" id="name" class="input-field" placeholder="Full Name" autocomplete="name">
+                    <span class="tooltip">?<span class="tooltip-text">Enter your full name. Must be 3-20 letters only. Example: John Doe</span></span>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="email" class="input-field" placeholder="Email Address" autocomplete="email">
+                    <span class="tooltip">?<span class="tooltip-text">Enter a valid email address. Example: user@example.com</span></span>
+                </div>
+                <div class="input-group phone-group">
+                    <span id="phone-prefix">0</span>
+                    <input type="tel" id="phone" class="input-field" placeholder="82 123 4567" autocomplete="tel-national" maxlength="9">
+                    <span class="tooltip">?<span class="tooltip-text">Enter your 10-digit SA phone number (the '0' is pre-filled). Must start with a valid prefix (082, 071, etc.).</span></span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="refcode" class="input-field" placeholder="Referral Code (Optional)">
+                    <span class="tooltip">?<span class="tooltip-text">Enter the code from the person who referred you.</span></span>
+                </div>
+                <div class="terms-group">
+                    <input type="checkbox" id="terms">
+                    <label for="terms">I agree to the <a href="#" target="_blank">Terms & Conditions</a>.</label>
+                </div>
+                <button type="submit" id="pay-button" disabled>Pay R200 Now</button>
+                <p class="security-note">🔒 Secured by Yoco Payments</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="progress-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="progress-title">Processing Your Registration...</h3>
+            <div id="progress-log"></div>
+        </div>
+    </div>
+    <div id="error-modal" class="modal">
+        <div class="modal-content">
+            <h3>An Error Occurred</h3>
+            <div id="error-message"></div>
+            <div id="error-options">
+                <button id="retry-btn">1. Retry Payment</button>
+                <button onclick="window.location.href='mailto:support@wealthwheel.co.za'">2. Contact Support</button>
+                <button id="copy-error-btn">3. Copy Error Details</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            const BACKEND_URL = 'https://wealthywheel.onrender.com';
+            const YOCO_PUBLIC_KEY = 'pk_live_1542a8e5ZBKJWzD39b25'; // Use your LIVE public key
+            const yoco = new YocoSDK({ publicKey: YOCO_PUBLIC_KEY });
+
+            // --- DOM ELEMENTS ---
+            const form = document.getElementById('payment-form');
+            const nameField = document.getElementById('name');
+            const emailField = document.getElementById('email');
+            const phoneField = document.getElementById('phone');
+            const refcodeField = document.getElementById('refcode');
+            const termsCheckbox = document.getElementById('terms');
+            const payButton = document.getElementById('pay-button');
+
+            const progressModal = document.getElementById('progress-modal');
+            const progressLog = document.getElementById('progress-log');
+            const errorModal = document.getElementById('error-modal');
+            const errorMessage = document.getElementById('error-message');
+            const retryBtn = document.getElementById('retry-btn');
+            const copyErrorBtn = document.getElementById('copy-error-btn');
+
+            // --- STATE ---
+            let currentUserId = null;
+            let formData = {};
+
+            // --- FULLSCREEN & LOCALSTORAGE ---
+            const requestFullScreen = () => {
+                if (document.documentElement.requestFullscreen && window.navigator.userAgent.includes("Chrome") && /Mobi|Android/i.test(navigator.userAgent)) {
+                    document.documentElement.requestFullscreen().catch(err => console.log(err));
+                }
+            };
+            const saveToLocalStorage = () => {
+                const data = { name: nameField.value, email: emailField.value, phone: phoneField.value, refcode: refcodeField.value };
+                localStorage.setItem('ww_formData', JSON.stringify(data));
+            };
+            const loadFromLocalStorage = () => {
+                const data = JSON.parse(localStorage.getItem('ww_formData'));
+                if (data) {
+                    nameField.value = data.name || '';
+                    emailField.value = data.email || '';
+                    phoneField.value = data.phone || '';
+                    refcodeField.value = data.refcode || '';
+                }
+            };
+
+            // --- VALIDATION ---
+            const validators = {
+                name: (val) => /^[a-zA-Z\s]{3,20}$/.test(val),
+                email: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+                phone: (val) => {
+                    const fullPhone = '0' + val;
+                    return /^0(60|61|62|63|64|65|66|67|68|71|72|73|74|76|78|79|81|82|83|84|86|94|95|96|97|98|99)[0-9]{7}$/.test(fullPhone);
+                },
+                terms: () => termsCheckbox.checked
+            };
+
+            const validateField = (field) => {
+                const isValid = validators[field.id](field.value);
+                field.classList.toggle('invalid', !isValid);
+                return isValid;
+            };
+
+            const validateForm = () => {
+                const isNameValid = validateField(nameField);
+                const isEmailValid = validateField(emailField);
+                const isPhoneValid = validateField(phoneField);
+                const areTermsAccepted = validators.terms();
+                payButton.disabled = !(isNameValid && isEmailValid && isPhoneValid && areTermsAccepted);
+            };
+
+            // --- MODAL & LOGGING ---
+            const showProgressModal = (message) => {
+                progressLog.innerHTML = `> ${message}`;
+                progressModal.style.display = 'flex';
+            };
+            const addProgressLog = (message) => {
+                progressLog.innerHTML += `\n> ${message}`;
+            };
+            const hideProgressModal = () => {
+                progressModal.style.display = 'none';
+            };
+            const showErrorModal = (error) => {
+                hideProgressModal();
+                errorMessage.textContent = error;
+                errorModal.style.display = 'flex';
+            };
+
+            // --- EVENT HANDLERS ---
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                validateForm();
+                if (payButton.disabled) return;
+
+                formData = {
+                    name: nameField.value.trim(),
+                    email: emailField.value.trim(),
+                    phone: '0' + phoneField.value.trim(),
+                    refCode: refcodeField.value.trim()
+                };
+
+                showProgressModal('Initializing registration...');
+
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/users/create`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Failed to create user profile.');
+                    
+                    currentUserId = data.userId;
+                    addProgressLog('Profile created. Redirecting to payment...');
+                    
+                    // --- INITIATE YOCO PAYMENT ---
+                    yoco.showPopup({
+                        amountInCents: 20000,
+                        currency: 'ZAR',
+                        name: 'Wealth Wheel Membership',
+                        description: `User ID: ${currentUserId}`,
+                        callback: handleYocoCallback
+                    });
+
+                } catch (error) {
+                    showErrorModal(error.message);
+                }
+            });
+
+            const handleYocoCallback = async (result) => {
+                if (result.error) {
+                    showErrorModal(`Payment cancelled or failed: ${result.error.message}`);
+                    return;
+                }
+                
+                addProgressLog('Payment token received. Verifying transaction...');
+
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/payments/verify`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: result.id, userId: currentUserId })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Payment verification failed.');
+
+                    addProgressLog('Verification successful! Your account is now active.');
+                    setTimeout(() => {
+                        hideProgressModal();
+                        // Optional: Redirect to a success page or dashboard
+                        alert('Success! Welcome to Wealth Wheel.');
+                        window.location.href = '/'; // Redirect to home/dashboard
+                    }, 2000);
+
+                } catch (error) {
+                    showErrorModal(error.message);
+                }
+            };
+
+            retryBtn.addEventListener('click', () => {
+                errorModal.style.display = 'none';
+                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            });
+
+            copyErrorBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(errorMessage.textContent);
+                alert('Error details copied to clipboard.');
+            });
+
+            // --- INITIALIZATION ---
+            [nameField, emailField, phoneField].forEach(field => {
+                field.addEventListener('input', () => {
+                    validateField(field);
+                    validateForm();
+                    saveToLocalStorage();
+                });
+            });
+            termsCheckbox.addEventListener('change', validateForm);
+            
+            window.addEventListener('load', () => {
+                requestFullScreen();
+                loadFromLocalStorage();
+                validateForm();
+            });
+        });
+    </script>
+</body>
+  </html>
