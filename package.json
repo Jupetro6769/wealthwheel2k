@@ -1,0 +1,17 @@
+{
+  "name": "wealthwheel-server",
+  "version": "1.0.0",
+  "description": "Unified backend server for Wealth Wheel user registration and payment verification.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "WealthWheel Development",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
